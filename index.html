@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>AquaPixel Studio — Create Sharper. Edit Smarter.</title>
+  <meta name="description" content="Professional client-side image processing studio. High-performance resizing, algorithmic sharpening, AI background removal, and compression without server uploads.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <style>
+    /* =====================================================================
+       AQUAPIXEL STUDIO COMPILED DESIGN SYSTEM & TAILWIND CORE UTILITIES
+       Theme: Bright Aqua Blue Creative Studio
+       ===================================================================== */
+    :root {
+      --color-sky-light: #E0F7FF;
+      --color-aqua-bright: #B8ECFF;
+      --color-azure-soft: #8BD9FF;
+      --color-blue-premium: #3B82F6;
+      --color-blue-deep: #2563EB;
+      --color-navy-dark: #0B1F3A;
+      --color-surface-white: #FFFFFF;
+      --color-surface-muted: #F8FAFC;
+      --color-border-subtle: #E2E8F0;
+      --shadow-ambient: 0 10px 30px -5px rgba(11, 31, 58, 0.05), 0 4px 10px -2px rgba(59, 130, 246, 0.04);
+      --shadow-glow: 0 0 25px rgba(184, 236, 255, 0.45);
+    }
+
+    *, ::before, ::after {
+      box-sizing: border-box;
+      border-width: 0;
+      border-style: solid;
+      border-color: var(--color-border-subtle);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #F0F9FF;
+      color: var(--color-navy-dark);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* Typography & Utilities */
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .bg-sky-light { background-color: var(--color-sky-light); }
+    .bg-aqua-bright { background-color: var(--color-aqua-bright); }
+    .bg-azure-soft { background-color: var(--color-azure-soft); }
+    .bg-blue-premium { background-color: var(--color-blue-premium); }
+    .bg-blue-deep { background-color: var(--color-blue-deep); }
+    .bg-navy-dark { background-color: var(--color-navy-dark); }
+    .text-navy-dark { color: var(--color-navy-dark); }
+    .text-blue-deep { color: var(--color-blue-deep); }
+    .text-blue-premium { color: var(--color-blue-premium); }
+
+    /* Custom Checkerboard Background for Transparency */
+    .bg-checkerboard {
+      background-color: #FFFFFF;
+      background-image: 
+        linear-gradient(45deg, #E2E8F0 25%, transparent 25%),
+        linear-gradient(-45deg, #E2E8F0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #E2E8F0 75%),
+        linear-gradient(-45deg, transparent 75%, #E2E8F0 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    }
+
+    /* Range Input Custom Treatment */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #E2E8F0;
+      border-radius: 9999px;
+      outline: none;
+      transition: background 0.2s ease;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--color-blue-deep);
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+      cursor: pointer;
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: var(--color-blue-premium);
+    }
+
+    /* Comparison Split Slider Viewport */
+    .comparison-container {
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+    }
+    .comparison-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow: hidden;
+      width: 50%;
+      border-right: 2px solid var(--color-blue-deep);
+      box-shadow: 2px 0 10px rgba(11, 31, 58, 0.15);
+    }
+    .comparison-handle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 36px;
+      height: 36px;
+      background: #FFFFFF;
+      border: 2px solid var(--color-blue-deep);
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(11, 31, 58, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: ew-resize;
+      z-index: 20;
+    }
+
+    /* Crop Interactive Overlay Box */
+    .crop-box {
+      position: absolute;
+      border: 2px dashed #FFFFFF;
+      box-shadow: 0 0 0 9999px rgba(11, 31, 58, 0.55);
+      cursor: move;
+      touch-action: none;
+    }
+
+    /* Custom Smooth Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+
+    /* Core Micro-transitions */
+    .studio-panel {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tool-btn-active {
+      background-color: var(--color-sky-light) !important;
+      color: var(--color-blue-deep) !important;
+      border-color: var(--color-azure-soft) !important;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =====================================================================
+       1. NAVIGATION BAR
+       ===================================================================== -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-blue-500 to-cyan-300 flex items-center justify-center shadow-md shadow-blue-500/20 text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <span class="text-xl font-extrabold tracking-tight text-slate-900">AquaPixel<span class="text-blue-600 font-semibold">.Studio</span></span>
+          <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider bg-sky-100 text-blue-700 rounded-full border border-sky-200">v1.0 Local Engine</span>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-semibold text-slate-600">
+        <a href="#workspace-section" class="hover:text-blue-600 transition-colors">Studio Workspace</a>
+        <a href="#features-section" class="hover:text-blue-600 transition-colors">Capabilities</a>
+        <a href="#privacy-section" class="hover:text-blue-600 transition-colors">Privacy Engine</a>
+        <a href="#faq-section" class="hover:text-blue-600 transition-colors">FAQ</a>
+      </nav>
+
+      <div class="flex items-center space-x-3">
+        <div id="backend-status-pill" class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="backend-status-text">Telemetry Ready</span>
+        </div>
+        <a href="#workspace-section" class="px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm shadow-blue-500/30 transition-all hover:shadow-md">Launch Studio</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- =====================================================================
+       2. HERO SECTION
+       ===================================================================== -->
+  <section class="relative pt-12 pb-20 overflow-hidden bg-gradient-to-b from-sky-50 via-white to-slate-50 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-bold uppercase tracking-wider mb-6">
+        <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+        </svg>
+        Instant In-Browser Processing • Zero Server Upload
+      </div>
+      
+      <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-tight sm:leading-none mb-6">
+        Create Sharper. <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-sky-500 to-blue-700">Edit Smarter.</span>
+      </h1>
+      
+      <p class="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8 font-normal">
+        AquaPixel Studio brings high-fidelity image resizing, unsharp algorithmic enhancement, AI background removal, and precision compression directly to your device memory.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#workspace-section" class="w-full sm:w-auto px-8 py-3.5 text-base font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02]">
+          Open Interactive Studio
+        </a>
+        <button onclick="document.getElementById('file-input').click()" class="w-full sm:w-auto px-8 py-3.5 text-base font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl shadow-sm transition-all">
+          Upload Image Directly
+        </button>
+      </div>
+
+      <!-- Live Interactive Comparison Teaser -->
+      <div class="mt-12 max-w-4xl mx-auto rounded-2xl p-2 bg-gradient-to-b from-white to-slate-100 shadow-2xl border border-slate-200">
+        <div class="rounded-xl overflow-hidden bg-slate-900 text-left relative aspect-[16/9] sm:aspect-[21/9]">
+          <div class="absolute inset-0 flex items-center justify-center text-slate-400 font-mono text-sm">
+            <div class="p-6 text-center">
+              <svg class="w-12 h-12 text-blue-400 mx-auto mb-3 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              <p class="font-bold text-white text-base">Drag & Drop Any Image Here or Paste (Ctrl+V)</p>
+              <p class="text-xs text-slate-400 mt-1">Supports JPEG, PNG, WebP • Up to 8000x8000px</p>
+            </div>
+          </div>
+          <div class="absolute bottom-3 left-4 text-xs font-mono text-white/70 bg-black/40 backdrop-blur px-2.5 py-1 rounded">AquaPixel Core Pipeline Ready</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       3. INTERACTIVE IMAGE WORKSPACE (MAIN ENGINE)
+       ===================================================================== -->
+  <main id="workspace-section" class="py-12 bg-slate-100/70 border-b border-slate-200 min-h-screen">
+    <div class="max-w-[1560px] mx-auto px-4 sm:px-6">
+
+      <!-- Workspace Top Control Bar -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-4 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center space-x-2 sm:space-x-3 overflow-x-auto pb-1 sm:pb-0">
+          <input type="file" id="file-input" class="hidden" accept="image/jpeg,image/png,image/webp">
+          <button id="btn-upload-trigger" class="flex items-center space-x-2 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            <span>Upload New</span>
+          </button>
+          
+          <div class="h-6 w-px bg-slate-200"></div>
+
+          <button id="btn-undo" title="Undo (Ctrl+Z)" disabled class="p-2 text-slate-600 hover:text-blue-600 disabled:opacity-40 disabled:hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a5 5 0 015 5v2m-15-7l4-4m-4 4l4 4"></path></svg>
+          </button>
+          <button id="btn-redo" title="Redo (Ctrl+Y)" disabled class="p-2 text-slate-600 hover:text-blue-600 disabled:opacity-40 disabled:hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a5 5 0 00-5 5v2m15-7l-4-4m4 4l-4 4"></path></svg>
+          </button>
+          <button id="btn-reset-all" title="Reset All Adjustments" disabled class="px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 disabled:opacity-40 rounded-lg hover:bg-rose-50 transition">
+            Reset
+          </button>
+          
+          <div class="h-6 w-px bg-slate-200"></div>
+
+          <!-- View Mode Selectors -->
+          <div class="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold text-slate-600">
+            <button id="mode-single" class="px-3 py-1.5 rounded-md bg-white text-blue-600 shadow-xs">Current</button>
+            <button id="mode-split" class="px-3 py-1.5 rounded-md hover:text-blue-600">Split View</button>
+            <button id="mode-side" class="px-3 py-1.5 rounded-md hover:text-blue-600">Side-by-Side</button>
+            <button id="mode-toggle" class="px-3 py-1.5 rounded-md hover:text-blue-600">Hold Original</button>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3 text-xs">
+          <!-- Zoom Controls -->
+          <div class="flex items-center space-x-1 bg-slate-100 rounded-lg p-1">
+            <button id="btn-zoom-out" class="p-1 hover:bg-white rounded text-slate-600">-</button>
+            <span id="zoom-level-text" class="px-2 font-mono font-semibold text-slate-700">100%</span>
+            <button id="btn-zoom-in" class="p-1 hover:bg-white rounded text-slate-600">+</button>
+            <button id="btn-zoom-fit" class="px-2 py-0.5 hover:bg-white rounded text-slate-600 font-medium">Fit</button>
+          </div>
+
+          <button id="btn-quick-export" disabled class="flex items-center space-x-2 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 rounded-lg shadow-sm transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span>Download</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Workspace 3-Column Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- ================= LEFT: TOOL SELECTION RAIL ================= -->
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-3 space-y-1.5">
+          <p class="px-3 py-2 text-xs font-bold uppercase tracking-wider text-slate-400">Processing Tools</p>
+          
+          <button data-tool="resize" class="tool-btn tool-btn-active w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 border border-transparent hover:bg-slate-50 transition text-left">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+            <span>Resize & Scale</span>
+          </button>
+
+          <button data-tool="enhance" class="tool-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 border border-transparent hover:bg-slate-50 transition text-left">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <span>Sharpen & Enhance</span>
+          </button>
+
+          <button data-tool="removebg" class="tool-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 border border-transparent hover:bg-slate-50 transition text-left">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"></path></svg>
+            <span>Remove Background</span>
+          </button>
+
+          <button data-tool="compress" class="tool-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 border border-transparent hover:bg-slate-50 transition text-left">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <span>Compress & Convert</span>
+          </button>
+
+          <button data-tool="crop" class="tool-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 border border-transparent hover:bg-slate-50 transition text-left">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <span>Crop & Transform</span>
+          </button>
+
+          <button data-tool="batch" class="tool-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 border border-transparent hover:bg-slate-50 transition text-left">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <span>Batch Studio</span>
+          </button>
+        </div>
+
+        <!-- ================= CENTER: MAIN IMAGE CANVAS ================= -->
+        <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex flex-col">
+          
+          <!-- Metadata Bar -->
+          <div id="image-meta-bar" class="flex flex-wrap items-center justify-between text-xs font-mono text-slate-500 pb-3 mb-3 border-b border-slate-100">
+            <div class="flex items-center space-x-4">
+              <span id="meta-filename" class="font-bold text-slate-700 truncate max-w-[200px]">No image loaded</span>
+              <span id="meta-dimensions">0 × 0 px</span>
+              <span id="meta-filesize">0 KB</span>
+              <span id="meta-format" class="uppercase bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 font-semibold">NONE</span>
+            </div>
+            <div id="dirty-indicator" class="hidden text-amber-600 font-sans font-semibold flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span> Unexported changes
+            </div>
+          </div>
+
+          <!-- Main Viewport Area -->
+          <div id="viewport-container" class="relative w-full aspect-[4/3] bg-slate-50 rounded-xl border border-dashed border-slate-300 overflow-hidden flex items-center justify-center">
+            
+            <!-- Upload Drop Target Placeholder -->
+            <div id="upload-placeholder" class="text-center p-8 cursor-pointer select-none">
+              <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-sky-100 border border-sky-200 flex items-center justify-center text-blue-600 shadow-inner">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+              </div>
+              <p class="text-base font-bold text-slate-800">Click or Drag & Drop Image Here</p>
+              <p class="text-xs text-slate-500 mt-1">JPEG, PNG, WebP supported • Direct browser processing</p>
+              <span class="inline-block mt-3 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 shadow-2xs">Or Paste with Ctrl+V</span>
+            </div>
+
+            <!-- Single Canvas Mode -->
+            <div id="canvas-wrapper" class="hidden relative max-w-full max-h-full overflow-auto p-2">
+              <canvas id="main-canvas" class="max-w-full max-h-full object-contain rounded shadow-sm bg-checkerboard"></canvas>
+              <div id="crop-selection" class="crop-box hidden"></div>
+            </div>
+
+            <!-- Split View Mode -->
+            <div id="split-wrapper" class="hidden comparison-container w-full h-full">
+              <canvas id="split-canvas-after" class="w-full h-full object-contain bg-checkerboard"></canvas>
+              <div id="split-overlay" class="comparison-overlay">
+                <canvas id="split-canvas-before" class="w-full h-full object-contain bg-checkerboard"></canvas>
+              </div>
+              <div id="split-handle" class="comparison-handle">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>
+              </div>
+            </div>
+
+            <!-- Side-by-Side Mode -->
+            <div id="side-wrapper" class="hidden grid grid-cols-2 gap-2 w-full h-full p-2">
+              <div class="relative flex flex-col items-center justify-center bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                <span class="absolute top-2 left-2 z-10 px-2 py-0.5 text-2xs font-mono font-bold bg-black/60 text-white rounded">ORIGINAL</span>
+                <canvas id="side-canvas-before" class="max-w-full max-h-full object-contain"></canvas>
+              </div>
+              <div class="relative flex flex-col items-center justify-center bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                <span class="absolute top-2 left-2 z-10 px-2 py-0.5 text-2xs font-mono font-bold bg-blue-600 text-white rounded">PROCESSED</span>
+                <canvas id="side-canvas-after" class="max-w-full max-h-full object-contain bg-checkerboard"></canvas>
+              </div>
+            </div>
+
+            <!-- Loading / AI Progress Indicator -->
+            <div id="progress-overlay" class="hidden absolute inset-0 bg-white/90 backdrop-blur-xs flex flex-col items-center justify-center z-30 p-6">
+              <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+              <p id="progress-status-text" class="text-sm font-bold text-slate-800">Processing Pixels...</p>
+              <div class="w-64 h-2 bg-slate-100 rounded-full mt-3 overflow-hidden border border-slate-200">
+                <div id="progress-bar-fill" class="h-full bg-blue-600 transition-all duration-150" style="width: 0%"></div>
+              </div>
+              <span id="progress-percentage-text" class="text-xs font-mono text-slate-500 mt-2">0%</span>
+            </div>
+
+          </div>
+
+          <!-- Bottom Pipeline Notification Toast -->
+          <div id="status-toast" class="hidden mt-3 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg flex items-center justify-between">
+            <span id="toast-message">Operation completed</span>
+            <button onclick="document.getElementById('status-toast').classList.add('hidden')" class="text-slate-400 hover:text-white">&times;</button>
+          </div>
+        </div>
+
+        <!-- ================= RIGHT: SETTINGS PANEL ================= -->
+        <div class="lg:col-span-3 space-y-4">
+
+          <!-- TOOL 1: RESIZE PANEL -->
+          <div id="panel-resize" class="tool-panel bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <div class="border-b border-slate-100 pb-3">
+              <h3 class="text-base font-bold text-slate-800">Advanced Resizer</h3>
+              <p class="text-xs text-slate-500">True pixel dimension recalculation</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-2xs font-bold uppercase text-slate-400">Width (px)</label>
+                <input type="number" id="resize-width-input" class="w-full mt-1 px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+              </div>
+              <div>
+                <label class="text-2xs font-bold uppercase text-slate-400">Height (px)</label>
+                <input type="number" id="resize-height-input" class="w-full mt-1 px-3 py-2 text-sm font-mono border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <label class="flex items-center space-x-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input type="checkbox" id="resize-lock-aspect" checked class="w-4 h-4 text-blue-600 rounded">
+                <span>Lock Aspect Ratio</span>
+              </label>
+              <button id="btn-resize-reset" class="text-2xs font-semibold text-blue-600 hover:underline">Reset Size</button>
+            </div>
+
+            <!-- Percentage Scale Presets -->
+            <div>
+              <label class="text-2xs font-bold uppercase text-slate-400">Scale Percentage</label>
+              <div class="grid grid-cols-4 gap-1.5 mt-2 text-xs font-semibold">
+                <button class="preset-scale px-2 py-1.5 bg-slate-100 hover:bg-sky-100 hover:text-blue-600 rounded-md" data-scale="0.25">25%</button>
+                <button class="preset-scale px-2 py-1.5 bg-slate-100 hover:bg-sky-100 hover:text-blue-600 rounded-md" data-scale="0.50">50%</button>
+                <button class="preset-scale px-2 py-1.5 bg-slate-100 hover:bg-sky-100 hover:text-blue-600 rounded-md" data-scale="0.75">75%</button>
+                <button class="preset-scale px-2 py-1.5 bg-sky-100 text-blue-600 rounded-md" data-scale="1.00">100%</button>
+                <button class="preset-scale px-2 py-1.5 bg-slate-100 hover:bg-sky-100 hover:text-blue-600 rounded-md" data-scale="1.50">150%</button>
+                <button class="preset-scale px-2 py-1.5 bg-slate-100 hover:bg-sky-100 hover:text-blue-600 rounded-md" data-scale="2.00">200%</button>
+                <button class="preset-scale px-2 py-1.5 bg-slate-100 hover:bg-sky-100 hover:text-blue-600 rounded-md" data-scale="4.00">400%</button>
+              </div>
+            </div>
+
+            <!-- Social & Standard Presets -->
+            <div>
+              <label class="text-2xs font-bold uppercase text-slate-400">Standard Presets</label>
+              <select id="resize-preset-select" class="w-full mt-1 px-3 py-2 text-xs font-semibold border border-slate-200 rounded-lg bg-white">
+                <option value="">Select Popular Preset...</option>
+                <option value="1080x1080">Instagram Post (1080×1080)</option>
+                <option value="1080x1920">Story / Reels (1080×1920)</option>
+                <option value="1280x720">HD Ready (1280×720)</option>
+                <option value="1920x1080">Full HD (1920×1080)</option>
+                <option value="3840x2160">4K Ultra HD (3840×2160)</option>
+              </select>
+            </div>
+
+            <button id="btn-apply-resize" class="w-full py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition shadow-sm">
+              Apply Resample
+            </button>
+          </div>
+
+          <!-- TOOL 2: SHARPEN & ENHANCE PANEL -->
+          <div id="panel-enhance" class="tool-panel hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <div class="border-b border-slate-100 pb-3">
+              <h3 class="text-base font-bold text-slate-800">Enhance & Sharpen</h3>
+              <p class="text-xs text-slate-500">Algorithmic convolution & contrast stretch</p>
+            </div>
+
+            <!-- Presets -->
+            <div>
+              <label class="text-2xs font-bold uppercase text-slate-400">Algorithmic Presets</label>
+              <div class="grid grid-cols-2 gap-2 mt-1.5 text-xs font-semibold">
+                <button class="preset-enhance px-2.5 py-1.5 bg-slate-100 hover:bg-sky-100 rounded-lg" data-preset="natural">Natural</button>
+                <button class="preset-enhance px-2.5 py-1.5 bg-slate-100 hover:bg-sky-100 rounded-lg" data-preset="crisp">Crisp Focus</button>
+                <button class="preset-enhance px-2.5 py-1.5 bg-slate-100 hover:bg-sky-100 rounded-lg" data-preset="portrait">Portrait Soft</button>
+                <button class="preset-enhance px-2.5 py-1.5 bg-slate-100 hover:bg-sky-100 rounded-lg" data-preset="product">Product Detail</button>
+              </div>
+            </div>
+
+            <!-- Sliders -->
+            <div class="space-y-3 text-xs">
+              <div>
+                <div class="flex justify-between font-semibold mb-1">
+                  <span>Sharpen Intensity (Kernel)</span>
+                  <span id="val-sharpen" class="font-mono text-blue-600">0%</span>
+                </div>
+                <input type="range" id="slider-sharpen" min="0" max="100" value="0">
+              </div>
+
+              <div>
+                <div class="flex justify-between font-semibold mb-1">
+                  <span>Contrast Boost</span>
+                  <span id="val-contrast" class="font-mono text-blue-600">0</span>
+                </div>
+                <input type="range" id="slider-contrast" min="-50" max="50" value="0">
+              </div>
+
+              <div>
+                <div class="flex justify-between font-semibold mb-1">
+                  <span>Brightness</span>
+                  <span id="val-brightness" class="font-mono text-blue-600">0</span>
+                </div>
+                <input type="range" id="slider-brightness" min="-50" max="50" value="0">
+              </div>
+
+              <div>
+                <div class="flex justify-between font-semibold mb-1">
+                  <span>Color Saturation</span>
+                  <span id="val-saturation" class="font-mono text-blue-600">0</span>
+                </div>
+                <input type="range" id="slider-saturation" min="-50" max="50" value="0">
+              </div>
+
+              <div>
+                <div class="flex justify-between font-semibold mb-1">
+                  <span>Exposure Curve</span>
+                  <span id="val-exposure" class="font-mono text-blue-600">0.0</span>
+                </div>
+                <input type="range" id="slider-exposure" min="-10" max="10" value="0">
+              </div>
+            </div>
+
+            <button id="btn-auto-enhance" class="w-full py-2 text-xs font-bold text-blue-700 bg-sky-100 hover:bg-sky-200 rounded-lg transition">
+              Auto Enhance (Histogram Stretch)
+            </button>
+          </div>
+
+          <!-- TOOL 3: REMOVE BACKGROUND PANEL -->
+          <div id="panel-removebg" class="tool-panel hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <div class="border-b border-slate-100 pb-3">
+              <h3 class="text-base font-bold text-slate-800">AI Background Removal</h3>
+              <p class="text-xs text-slate-500">Local Neural Network IS-Net WASM engine</p>
+            </div>
+
+            <div class="p-3 bg-sky-50 rounded-xl border border-sky-200 text-xs text-sky-800 leading-relaxed">
+              <strong>Local Privacy Guarantee:</strong> The AI model executes entirely inside your browser memory. Your photograph is never sent to a cloud server.
+            </div>
+
+            <button id="btn-execute-removebg" class="w-full py-3 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 transition flex items-center justify-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <span>Erase Background Now</span>
+            </button>
+
+            <!-- Background Replacer Options -->
+            <div>
+              <label class="text-2xs font-bold uppercase text-slate-400">Replace With Background</label>
+              <div class="grid grid-cols-4 gap-2 mt-2">
+                <button data-bg="transparent" class="bg-opt px-2 py-2 border-2 border-blue-600 rounded-lg text-2xs font-bold bg-checkerboard flex items-center justify-center">Transp</button>
+                <button data-bg="#FFFFFF" class="bg-opt px-2 py-2 border border-slate-200 rounded-lg text-2xs font-bold bg-white text-slate-700">White</button>
+                <button data-bg="#E0F7FF" class="bg-opt px-2 py-2 border border-slate-200 rounded-lg text-2xs font-bold bg-sky-100 text-blue-800">Aqua</button>
+                <button data-bg="#0B1F3A" class="bg-opt px-2 py-2 border border-slate-200 rounded-lg text-2xs font-bold bg-slate-900 text-white">Navy</button>
+              </div>
+              <div class="mt-2 flex items-center space-x-2">
+                <span class="text-xs text-slate-600">Custom:</span>
+                <input type="color" id="bg-custom-color" value="#3B82F6" class="w-8 h-8 rounded border border-slate-200 cursor-pointer">
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 4: COMPRESS & CONVERT PANEL -->
+          <div id="panel-compress" class="tool-panel hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <div class="border-b border-slate-100 pb-3">
+              <h3 class="text-base font-bold text-slate-800">Compress & Format</h3>
+              <p class="text-xs text-slate-500">Fine-tune file payload & output mime</p>
+            </div>
+
+            <div>
+              <label class="text-2xs font-bold uppercase text-slate-400">Target Format</label>
+              <div class="grid grid-cols-3 gap-2 mt-1.5 text-xs font-bold">
+                <button data-format="image/png" class="fmt-btn px-2 py-2 border-2 border-blue-600 bg-sky-50 text-blue-700 rounded-lg">PNG</button>
+                <button data-format="image/jpeg" class="fmt-btn px-2 py-2 border border-slate-200 bg-white text-slate-700 rounded-lg">JPEG</button>
+                <button data-format="image/webp" class="fmt-btn px-2 py-2 border border-slate-200 bg-white text-slate-700 rounded-lg">WebP</button>
+              </div>
+            </div>
+
+            <div id="quality-slider-container">
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span>Compression Quality</span>
+                <span id="val-quality" class="font-mono text-blue-600">92%</span>
+              </div>
+              <input type="range" id="slider-quality" min="10" max="100" value="92">
+              <p class="text-2xs text-slate-400 mt-1">Note: PNG uses lossless compression; quality slider applies strictly to JPEG and WebP.</p>
+            </div>
+
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 font-mono text-xs">
+              <div class="flex justify-between">
+                <span class="text-slate-500">Original Size:</span>
+                <span id="compress-orig-size">0 KB</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Estimated Output:</span>
+                <span id="compress-out-size" class="font-bold text-slate-800">0 KB</span>
+              </div>
+              <div class="flex justify-between pt-1 border-t border-slate-200">
+                <span class="text-slate-500">Payload Delta:</span>
+                <span id="compress-delta" class="font-bold text-emerald-600">0%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 5: CROP & TRANSFORM PANEL -->
+          <div id="panel-crop" class="tool-panel hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <div class="border-b border-slate-100 pb-3">
+              <h3 class="text-base font-bold text-slate-800">Crop & Transform</h3>
+              <p class="text-xs text-slate-500">Canvas geometry and aspect adjustments</p>
+            </div>
+
+            <div>
+              <label class="text-2xs font-bold uppercase text-slate-400">Crop Ratio Lock</label>
+              <div class="grid grid-cols-3 gap-1.5 mt-1.5 text-xs font-semibold">
+                <button data-ratio="free" class="crop-ratio-btn px-2 py-1.5 border-2 border-blue-600 bg-sky-50 text-blue-700 rounded-md">Free</button>
+                <button data-ratio="1:1" class="crop-ratio-btn px-2 py-1.5 border border-slate-200 rounded-md">1:1</button>
+                <button data-ratio="4:3" class="crop-ratio-btn px-2 py-1.5 border border-slate-200 rounded-md">4:3</button>
+                <button data-ratio="16:9" class="crop-ratio-btn px-2 py-1.5 border border-slate-200 rounded-md">16:9</button>
+                <button data-ratio="9:16" class="crop-ratio-btn px-2 py-1.5 border border-slate-200 rounded-md">9:16</button>
+                <button data-ratio="3:2" class="crop-ratio-btn px-2 py-1.5 border border-slate-200 rounded-md">3:2</button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button id="btn-confirm-crop" class="flex-1 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">Apply Crop</button>
+              <button id="btn-cancel-crop" class="px-3 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition">Cancel</button>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100">
+              <label class="text-2xs font-bold uppercase text-slate-400">Orientation & Flip</label>
+              <div class="grid grid-cols-2 gap-2 mt-2 text-xs font-semibold">
+                <button id="btn-rotate-90" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center justify-center gap-1.5">
+                  <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  <span>Rotate 90°</span>
+                </button>
+                <button id="btn-rotate-180" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg">Rotate 180°</button>
+                <button id="btn-flip-h" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg">Flip Horizontal</button>
+                <button id="btn-flip-v" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg">Flip Vertical</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 6: BATCH STUDIO PANEL -->
+          <div id="panel-batch" class="tool-panel hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <div class="border-b border-slate-100 pb-3">
+              <h3 class="text-base font-bold text-slate-800">Batch Studio</h3>
+              <p class="text-xs text-slate-500">Process multi-image queues simultaneously</p>
+            </div>
+
+            <input type="file" id="batch-file-input" class="hidden" multiple accept="image/jpeg,image/png,image/webp">
+            <button onclick="document.getElementById('batch-file-input').click()" class="w-full py-2.5 text-xs font-bold text-blue-700 bg-sky-100 hover:bg-sky-200 rounded-lg transition border border-sky-200">
+              + Add Images to Batch Queue
+            </button>
+
+            <!-- Batch Queue List -->
+            <div id="batch-queue-list" class="space-y-2 max-h-48 overflow-y-auto text-xs font-mono">
+              <p class="text-slate-400 italic text-center py-4">No batch items queued.</p>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 space-y-2">
+              <button id="btn-process-batch" disabled class="w-full py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 rounded-lg transition shadow-sm">
+                Process Entire Batch
+              </button>
+              <button id="btn-download-batch-zip" disabled class="w-full py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 rounded-lg transition">
+                Download All as ZIP
+              </button>
+            </div>
+          </div>
+
+          <!-- GLOBAL EXPORT SUMMARY CARD -->
+          <div class="bg-gradient-to-br from-slate-900 to-blue-950 rounded-2xl p-5 text-white shadow-lg space-y-3">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-sky-300">Ready to Export</span>
+              <span id="export-badge-format" class="text-2xs font-mono font-bold bg-white/15 px-2 py-0.5 rounded">PNG</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300">
+              <div>
+                <span class="text-slate-400 text-2xs block">DIMENSIONS</span>
+                <span id="export-summary-dim">0 × 0 px</span>
+              </div>
+              <div>
+                <span class="text-slate-400 text-2xs block">ESTIMATED SIZE</span>
+                <span id="export-summary-size">0 KB</span>
+              </div>
+            </div>
+
+            <button id="btn-download-final" disabled class="w-full py-3 text-sm font-bold text-blue-950 bg-cyan-300 hover:bg-cyan-200 disabled:opacity-40 rounded-xl transition shadow-md shadow-cyan-300/20">
+              Download Processed Image
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- =====================================================================
+       4. FEATURES SHOWCASE
+       ===================================================================== -->
+  <section id="features-section" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">Studio Grade Capabilities</h2>
+        <p class="mt-4 text-base text-slate-600">Engineered with high performance native browser APIs, avoiding cloud queues and privacy compromises.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="p-8 rounded-2xl bg-slate-50 border border-slate-200 hover:border-blue-300 transition hover:shadow-lg">
+          <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-6">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">High-Fidelity Resizing</h3>
+          <p class="text-sm text-slate-600">Multi-step downscaling preserves acute contrast edges while high-performance bicubic algorithms upscale without harsh banding.</p>
+        </div>
+
+        <div class="p-8 rounded-2xl bg-slate-50 border border-slate-200 hover:border-blue-300 transition hover:shadow-lg">
+          <div class="w-12 h-12 rounded-xl bg-cyan-100 text-cyan-600 flex items-center justify-center mb-6">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Convolution Unsharp Mask</h3>
+          <p class="text-sm text-slate-600">Real mathematical convolution kernel operates across your raw ImageData pixel buffers to bring true visual crispness.</p>
+        </div>
+
+        <div class="p-8 rounded-2xl bg-slate-50 border border-slate-200 hover:border-blue-300 transition hover:shadow-lg">
+          <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-6">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"></path></svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-2">In-Browser AI Cutout</h3>
+          <p class="text-sm text-slate-600">IS-Net neural network compiled to WebAssembly executes salient object segmentation locally with zero server leaks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       5. PRIVACY & SECURITY ARCHITECTURE
+       ===================================================================== -->
+  <section id="privacy-section" class="py-16 bg-slate-900 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-3xl">
+        <span class="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">Zero Cloud Ingestion Guarantee</span>
+        <h2 class="text-3xl font-extrabold tracking-tight mt-2 mb-4">Your Pixels Remain In Your Hardware Memory.</h2>
+        <p class="text-slate-400 text-base leading-relaxed mb-6">
+          Traditional image processing web tools upload your private photographs to remote cloud storage. AquaPixel Studio runs 100% locally via the browser's native Canvas API and ONNX WebAssembly. The only communication dispatched to Google Apps Script is anonymous diagnostic telemetry (operation type, dimensions, duration, and status) without any image payloads.
+        </p>
+        <div class="flex flex-wrap gap-4 text-xs font-mono">
+          <div class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15 text-emerald-300">✓ No Remote Image Storage</div>
+          <div class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15 text-emerald-300">✓ In-Memory GC Allocation</div>
+          <div class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15 text-emerald-300">✓ Offline Capable (PWA ready)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       6. FREQUENTLY ASKED QUESTIONS (FAQ)
+       ===================================================================== -->
+  <section id="faq-section" class="py-20 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-3xl font-extrabold text-slate-900 text-center mb-12">Frequently Asked Questions</h2>
+      
+      <div class="space-y-4">
+        <details class="group border border-slate-200 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-bold text-slate-800 text-base">
+            <span>What image formats can I upload and export?</span>
+            <span class="transition group-open:rotate-180">▼</span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+            AquaPixel Studio supports input decoding of JPEG, PNG, and WebP natively across all modern browsers. You can export your processed image into lossless PNG, highly compatible JPEG, or modern WebP with custom compression levels.
+          </p>
+        </details>
+
+        <details class="group border border-slate-200 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-bold text-slate-800 text-base">
+            <span>Why does the first AI Background Removal take a few moments?</span>
+            <span class="transition group-open:rotate-180">▼</span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+            Upon first use, the browser downloads the quantized IS-Net ONNX neural network weights (~40 MB) from jsDelivr CDN and compiles the WebAssembly runtime. Once downloaded, your browser caches the model, making subsequent background removals instantaneous.
+          </p>
+        </details>
+
+        <details class="group border border-slate-200 rounded-xl p-5 [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-bold text-slate-800 text-base">
+            <span>Does upscaling create genuine high-resolution photographic detail?</span>
+            <span class="transition group-open:rotate-180">▼</span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-600 leading-relaxed">
+            No. Our high-fidelity resizer uses advanced bicubic interpolation and algorithmic edge sharpening. While this significantly reduces pixelation and edge degradation when scaling up, no interpolation engine can invent true ground-truth pixels that were never recorded by the camera sensor.
+          </p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       7. FOOTER
+       ===================================================================== -->
+  <footer class="bg-slate-50 border-t border-slate-200 py-12 text-slate-500 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-slate-800 text-sm">AquaPixel Studio</span>
+        <span>— Create Sharper. Edit Smarter.</span>
+      </div>
+      <div>
+        Designed for production static deployment • Google Apps Script Analytics Ready
+      </div>
+    </div>
+  </footer>
+
+  <!-- =====================================================================
+       8. JAVASCRIPT ENGINE (MODULAR ARCHITECTURE)
+       ===================================================================== -->
+  <script>
+    /**
+     * AQUAPIXEL STUDIO — CLIENT ENGINE CORE
+     * Self-contained Vanilla JS Application Architecture
+     */
+    (function () {
+      'use strict';
+
+      // ==========================================
+      // SECTION 1: GLOBAL CONFIGURATION
+      // ==========================================
+      const CONFIG = {
+        // REPLACE THIS URL with your published Google Apps Script Web App URL:
+        APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyal-caJcCI5rg8_yb5oAbsIslDddmKQOVIIIch48YWXgLHpbdnKba1qXZ-7SNC4-cH/exec',
+        AI_MODEL_CDN: 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm',
+        JSZIP_CDN: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+        MAX_SAFE_DIMENSION: 8000,
+        SESSION_ID: 'session_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now()
+      };
+
+      // ==========================================
+      // SECTION 2: CENTRALIZED APPLICATION STATE
+      // ==========================================
+      const state = {
+        originalImage: null, // HTMLImageElement
+        originalFile: null,  // File
+        filename: '',
+        mimeType: 'image/png',
+        
+        // Dimensions
+        originalWidth: 0,
+        originalHeight: 0,
+        targetWidth: 0,
+        targetHeight: 0,
+        lockAspectRatio: true,
+
+        // Geometry Transform
+        rotation: 0,     // 0, 90, 180, 270
+        flipH: false,
+        flipV: false,
+        cropRect: null,  // { x, y, width, height }
+
+        // Sharpen & Enhancements
+        sharpenAmount: 0,
+        contrast: 0,
+        brightness: 0,
+        saturation: 0,
+        exposure: 0,
+
+        // AI Cutout & Composite
+        aiCutoutBlob: null,
+        backgroundColor: 'transparent', // 'transparent' | hex
+
+        // Export & Compression
+        exportFormat: 'image/png',
+        exportQuality: 0.92,
+        estimatedSizeKB: 0,
+
+        // Workspace Modes
+        viewMode: 'single', // 'single' | 'split' | 'side' | 'toggle'
+        activeTool: 'resize',
+        zoomLevel: 1.0,
+        isHoldingOriginal: false,
+        isDirty: false,
+
+        // Batch Queue
+        batchQueue: []
+      };
+
+      // History Undo/Redo Stacks
+      const history = {
+        stack: [],
+        index: -1,
+        maxSize: 20
+      };
+
+      // ==========================================
+      // SECTION 3: DOM REFERENCES CACHE
+      // ==========================================
+      const DOM = {
+        // Canvases
+        mainCanvas: document.getElementById('main-canvas'),
+        splitCanvasBefore: document.getElementById('split-canvas-before'),
+        splitCanvasAfter: document.getElementById('split-canvas-after'),
+        sideCanvasBefore: document.getElementById('side-canvas-before'),
+        sideCanvasAfter: document.getElementById('side-canvas-after'),
+
+        // Viewport Wrappers
+        viewport: document.getElementById('viewport-container'),
+        canvasWrapper: document.getElementById('canvas-wrapper'),
+        splitWrapper: document.getElementById('split-wrapper'),
+        sideWrapper: document.getElementById('side-wrapper'),
+        splitOverlay: document.getElementById('split-overlay'),
+        splitHandle: document.getElementById('split-handle'),
+        uploadPlaceholder: document.getElementById('upload-placeholder'),
+        cropSelection: document.getElementById('crop-selection'),
+
+        // Inputs & Controls
+        fileInput: document.getElementById('file-input'),
+        batchFileInput: document.getElementById('batch-file-input'),
+        btnUploadTrigger: document.getElementById('btn-upload-trigger'),
+        resizeWidthInput: document.getElementById('resize-width-input'),
+        resizeHeightInput: document.getElementById('resize-height-input'),
+        resizeLockAspect: document.getElementById('resize-lock-aspect'),
+        resizePresetSelect: document.getElementById('resize-preset-select'),
+        btnApplyResize: document.getElementById('btn-apply-resize'),
+        btnResizeReset: document.getElementById('btn-resize-reset'),
+
+        // Enhancement Sliders
+        sliderSharpen: document.getElementById('slider-sharpen'),
+        sliderContrast: document.getElementById('slider-contrast'),
+        sliderBrightness: document.getElementById('slider-brightness'),
+        sliderSaturation: document.getElementById('slider-saturation'),
+        sliderExposure: document.getElementById('slider-exposure'),
+        valSharpen: document.getElementById('val-sharpen'),
+        valContrast: document.getElementById('val-contrast'),
+        valBrightness: document.getElementById('val-brightness'),
+        valSaturation: document.getElementById('val-saturation'),
+        valExposure: document.getElementById('val-exposure'),
+        btnAutoEnhance: document.getElementById('btn-auto-enhance'),
+
+        // Background Removal
+        btnExecuteRemoveBG: document.getElementById('btn-execute-removebg'),
+        bgCustomColor: document.getElementById('bg-custom-color'),
+
+        // Compress & Export Controls
+        sliderQuality: document.getElementById('slider-quality'),
+        valQuality: document.getElementById('val-quality'),
+        qualitySliderContainer: document.getElementById('quality-slider-container'),
+        compressOrigSize: document.getElementById('compress-orig-size'),
+        compressOutSize: document.getElementById('compress-out-size'),
+        compressDelta: document.getElementById('compress-delta'),
+
+        // Transform Controls
+        btnConfirmCrop: document.getElementById('btn-confirm-crop'),
+        btnCancelCrop: document.getElementById('btn-cancel-crop'),
+        btnRotate90: document.getElementById('btn-rotate-90'),
+        btnRotate180: document.getElementById('btn-rotate-180'),
+        btnFlipH: document.getElementById('btn-flip-h'),
+        btnFlipV: document.getElementById('btn-flip-v'),
+
+        // History & Export Buttons
+        btnUndo: document.getElementById('btn-undo'),
+        btnRedo: document.getElementById('btn-redo'),
+        btnResetAll: document.getElementById('btn-reset-all'),
+        btnQuickExport: document.getElementById('btn-quick-export'),
+        btnDownloadFinal: document.getElementById('btn-download-final'),
+
+        // Batch Controls
+        btnProcessBatch: document.getElementById('btn-process-batch'),
+        btnDownloadBatchZip: document.getElementById('btn-download-batch-zip'),
+        batchQueueList: document.getElementById('batch-queue-list'),
+
+        // Metadata & Diagnostics
+        metaFilename: document.getElementById('meta-filename'),
+        metaDimensions: document.getElementById('meta-dimensions'),
+        metaFilesize: document.getElementById('meta-filesize'),
+        metaFormat: document.getElementById('meta-format'),
+        dirtyIndicator: document.getElementById('dirty-indicator'),
+        exportBadgeFormat: document.getElementById('export-badge-format'),
+        exportSummaryDim: document.getElementById('export-summary-dim'),
+        exportSummarySize: document.getElementById('export-summary-size'),
+
+        // Zoom & Status
+        btnZoomIn: document.getElementById('btn-zoom-in'),
+        btnZoomOut: document.getElementById('btn-zoom-out'),
+        btnZoomFit: document.getElementById('btn-zoom-fit'),
+        zoomLevelText: document.getElementById('zoom-level-text'),
+        progressOverlay: document.getElementById('progress-overlay'),
+        progressStatusText: document.getElementById('progress-status-text'),
+        progressBarFill: document.getElementById('progress-bar-fill'),
+        progressPercentageText: document.getElementById('progress-percentage-text'),
+        statusToast: document.getElementById('status-toast'),
+        toastMessage: document.getElementById('toast-message'),
+        backendStatusPill: document.getElementById('backend-status-pill'),
+        backendStatusText: document.getElementById('backend-status-text')
+      };
+
+      // ==========================================
+      // SECTION 4: IMAGE DECODING & FILE UPLOAD
+      // ==========================================
+      function handleIncomingFile(file) {
+        if (!file) return;
+
+        // Validation: MIME Check
+        const validMimes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!validMimes.includes(file.type)) {
+          showToast('Invalid format. Please upload JPEG, PNG, or WebP.', true);
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            // Check max safe dimensions
+            if (img.naturalWidth > CONFIG.MAX_SAFE_DIMENSION || img.naturalHeight > CONFIG.MAX_SAFE_DIMENSION) {
+              showToast(`Image dimensions exceed maximum safe limit of ${CONFIG.MAX_SAFE_DIMENSION}px.`, true);
+              return;
+            }
+
+            // Load new active image state
+            state.originalImage = img;
+            state.originalFile = file;
+            state.filename = file.name.replace(/\.[^/.]+$/, "");
+            state.mimeType = file.type;
+            state.originalWidth = img.naturalWidth;
+            state.originalHeight = img.naturalHeight;
+            state.targetWidth = img.naturalWidth;
+            state.targetHeight = img.naturalHeight;
+
+            // Reset adjustments
+            resetOperationalState();
+
+            // Push clean initial history state
+            history.stack = [];
+            history.index = -1;
+            pushHistoryState('Initial Image Load');
+
+            // Update UI & Execute pipeline
+            updateMetaDisplays();
+            renderActivePipeline();
+            enableWorkspaceUI();
+            showToast('Image successfully loaded.');
+
+            // Record Telemetry
+            dispatchTelemetry('IMAGE_ACTION', {
+              toolName: 'Upload',
+              action: 'File Loaded',
+              inputFormat: file.type,
+              origDimensions: `${img.naturalWidth}x${img.naturalHeight}`,
+              origSizeKB: (file.size / 1024).toFixed(1)
+            });
+          };
+
+          img.onerror = function () {
+            showToast('Failed to decode image data.', true);
+          };
+
+          img.src = e.target.result;
+        };
+
+        reader.readAsDataURL(file);
+      }
+
+      function resetOperationalState() {
+        state.rotation = 0;
+        state.flipH = false;
+        state.flipV = false;
+        state.cropRect = null;
+        state.sharpenAmount = 0;
+        state.contrast = 0;
+        state.brightness = 0;
+        state.saturation = 0;
+        state.exposure = 0;
+        state.aiCutoutBlob = null;
+        state.backgroundColor = 'transparent';
+        state.exportFormat = state.mimeType || 'image/png';
+        state.exportQuality = 0.92;
+        state.isDirty = false;
+
+        // Reset inputs
+        DOM.sliderSharpen.value = 0;
+        DOM.sliderContrast.value = 0;
+        DOM.sliderBrightness.value = 0;
+        DOM.sliderSaturation.value = 0;
+        DOM.sliderExposure.value = 0;
+        updateSliderLabels();
+      }
+
+      // ==========================================
+      // SECTION 5: IMAGE TRANSFORMATION PIPELINE
+      // ==========================================
+      /**
+       * Core Deterministic Pipeline:
+       * Source Image -> Geometry (Crop/Rotate/Flip) -> Resample -> Pixels (Convolution/Colors) -> Composite
+       */
+      function renderActivePipeline() {
+        if (!state.originalImage) return;
+
+        // 1. Setup Offscreen Canvas for Geometry Stage
+        const geoCanvas = document.createElement('canvas');
+        const geoCtx = geoCanvas.getContext('2d');
+
+        let srcWidth = state.originalImage.naturalWidth;
+        let srcHeight = state.originalImage.naturalHeight;
+
+        // Determine orientation bounds
+        const isSwapped = state.rotation === 90 || state.rotation === 270;
+        geoCanvas.width = isSwapped ? srcHeight : srcWidth;
+        geoCanvas.height = isSwapped ? srcWidth : srcHeight;
+
+        // Apply Rotation and Flip
+        geoCtx.save();
+        geoCtx.translate(geoCanvas.width / 2, geoCanvas.height / 2);
+        geoCtx.rotate((state.rotation * Math.PI) / 180);
+        geoCtx.scale(state.flipH ? -1 : 1, state.flipV ? -1 : 1);
+        geoCtx.drawImage(state.originalImage, -srcWidth / 2, -srcHeight / 2);
+        geoCtx.restore();
+
+        // Handle Active Crop
+        let preppedCanvas = geoCanvas;
+        if (state.cropRect) {
+          const cropCanvas = document.createElement('canvas');
+          cropCanvas.width = state.cropRect.width;
+          cropCanvas.height = state.cropRect.height;
+          const cropCtx = cropCanvas.getContext('2d');
+          cropCtx.drawImage(
+            geoCanvas,
+            state.cropRect.x, state.cropRect.y, state.cropRect.width, state.cropRect.height,
+            0, 0, state.cropRect.width, state.cropRect.height
+          );
+          preppedCanvas = cropCanvas;
+        }
+
+        // 2. Resampling Stage
+        const targetW = Math.max(1, Math.round(state.targetWidth));
+        const targetH = Math.max(1, Math.round(state.targetHeight));
+        
+        const resampleCanvas = document.createElement('canvas');
+        resampleCanvas.width = targetW;
+        resampleCanvas.height = targetH;
+        const resCtx = resampleCanvas.getContext('2d');
+        resCtx.imageSmoothingEnabled = true;
+        resCtx.imageSmoothingQuality = 'high';
+
+        // High Quality Halving Downscale Algorithm for Crisp Downsamples
+        if (targetW < preppedCanvas.width * 0.5 && targetH < preppedCanvas.height * 0.5) {
+          let curCanvas = preppedCanvas;
+          let curW = preppedCanvas.width;
+          let curH = preppedCanvas.height;
+
+          while (curW * 0.5 > targetW && curH * 0.5 > targetH) {
+            const halfCanvas = document.createElement('canvas');
+            halfCanvas.width = Math.round(curW * 0.5);
+            halfCanvas.height = Math.round(curH * 0.5);
+            const halfCtx = halfCanvas.getContext('2d');
+            halfCtx.imageSmoothingEnabled = true;
+            halfCtx.drawImage(curCanvas, 0, 0, halfCanvas.width, halfCanvas.height);
+            curCanvas = halfCanvas;
+            curW = halfCanvas.width;
+            curH = halfCanvas.height;
+          }
+          resCtx.drawImage(curCanvas, 0, 0, targetW, targetH);
+        } else {
+          resCtx.drawImage(preppedCanvas, 0, 0, targetW, targetH);
+        }
+
+        // 3. Background Removal Cutout Composite Stage (If Present)
+        if (state.aiCutoutBlob) {
+          // If we have an AI cutout mask, draw the background fill first
+          if (state.backgroundColor !== 'transparent') {
+            resCtx.save();
+            resCtx.globalCompositeOperation = 'destination-over';
+            resCtx.fillStyle = state.backgroundColor;
+            resCtx.fillRect(0, 0, targetW, targetH);
+            resCtx.restore();
+          }
+        }
+
+        // 4. Pixel-Level Adjustments & Algorithmic Convolution
+        const imgData = resCtx.getImageData(0, 0, targetW, targetH);
+        applyPixelEnhancements(imgData.data, targetW, targetH);
+        resCtx.putImageData(imgData, 0, 0);
+
+        // 5. Transfer to Main Work Surface
+        DOM.mainCanvas.width = targetW;
+        DOM.mainCanvas.height = targetH;
+        const mainCtx = DOM.mainCanvas.getContext('2d');
+        mainCtx.clearRect(0, 0, targetW, targetH);
+        mainCtx.drawImage(resampleCanvas, 0, 0);
+
+        // Update Before & After Comparison Canvases
+        renderComparisonCanvases(preppedCanvas, resampleCanvas);
+
+        // Recalculate Live Export Byte Sizes
+        estimateExportSize(DOM.mainCanvas);
+      }
+
+      /**
+       * In-Place Algorithmic Convolution & Pixel Color Adjustment Engine
+       */
+      function applyPixelEnhancements(pixels, width, height) {
+        const sharpen = state.sharpenAmount / 100; // 0.0 to 1.0
+        const contrastFactor = (259 * (state.contrast + 255)) / (255 * (259 - state.contrast));
+        const brightAdd = state.brightness * 2.55;
+        const satRatio = 1 + (state.saturation / 100);
+        const expMultiplier = Math.pow(2, state.exposure / 5);
+
+        // Convolution sharpen pass using 3x3 kernel when sharpen > 0
+        let originalPixels = null;
+        if (sharpen > 0) {
+          originalPixels = new Uint8ClampedArray(pixels);
+          const kCenter = 1 + (4 * sharpen);
+          const kEdge = -sharpen;
+
+          for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+              const idx = (y * width + x) * 4;
+
+              for (let c = 0; c < 3; c++) { // R, G, B channels
+                const val = 
+                  originalPixels[((y - 1) * width + x) * 4 + c] * kEdge +
+                  originalPixels[(y * width + (x - 1)) * 4 + c] * kEdge +
+                  originalPixels[idx + c] * kCenter +
+                  originalPixels[(y * width + (x + 1)) * 4 + c] * kEdge +
+                  originalPixels[((y + 1) * width + x) * 4 + c] * kEdge;
+
+                pixels[idx + c] = val;
+              }
+            }
+          }
+        }
+
+        // Color grading & curve pass
+        const len = pixels.length;
+        for (let i = 0; i < len; i += 4) {
+          let r = pixels[i];
+          let g = pixels[i + 1];
+          let b = pixels[i + 2];
+
+          // 1. Exposure
+          if (expMultiplier !== 1.0) {
+            r *= expMultiplier;
+            g *= expMultiplier;
+            b *= expMultiplier;
+          }
+
+          // 2. Brightness
+          if (brightAdd !== 0) {
+            r += brightAdd;
+            g += brightAdd;
+            b += brightAdd;
+          }
+
+          // 3. Contrast
+          if (state.contrast !== 0) {
+            r = contrastFactor * (r - 128) + 128;
+            g = contrastFactor * (g - 128) + 128;
+            b = contrastFactor * (b - 128) + 128;
+          }
+
+          // 4. Saturation
+          if (state.saturation !== 0) {
+            const gray = 0.2989 * r + 0.5870 * g + 0.1140 * b;
+            r = gray + satRatio * (r - gray);
+            g = gray + satRatio * (g - gray);
+            b = gray + satRatio * (b - gray);
+          }
+
+          pixels[i] = r < 0 ? 0 : r > 255 ? 255 : r;
+          pixels[i + 1] = g < 0 ? 0 : g > 255 ? 255 : g;
+          pixels[i + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
+        }
+      }
+
+      // ==========================================
+      // SECTION 6: BEFORE & AFTER COMPARISONS
+      // ==========================================
+      function renderComparisonCanvases(originalCanvas, processedCanvas) {
+        // Split view canvases
+        DOM.splitCanvasBefore.width = originalCanvas.width;
+        DOM.splitCanvasBefore.height = originalCanvas.height;
+        DOM.splitCanvasBefore.getContext('2d').drawImage(originalCanvas, 0, 0);
+
+        DOM.splitCanvasAfter.width = processedCanvas.width;
+        DOM.splitCanvasAfter.height = processedCanvas.height;
+        DOM.splitCanvasAfter.getContext('2d').drawImage(processedCanvas, 0, 0);
+
+        // Side by side canvases
+        DOM.sideCanvasBefore.width = originalCanvas.width;
+        DOM.sideCanvasBefore.height = originalCanvas.height;
+        DOM.sideCanvasBefore.getContext('2d').drawImage(originalCanvas, 0, 0);
+
+        DOM.sideCanvasAfter.width = processedCanvas.width;
+        DOM.sideCanvasAfter.height = processedCanvas.height;
+        DOM.sideCanvasAfter.getContext('2d').drawImage(processedCanvas, 0, 0);
+      }
+
+      function setViewMode(mode) {
+        state.viewMode = mode;
+        ['mode-single', 'mode-split', 'mode-side', 'mode-toggle'].forEach(id => {
+          document.getElementById(id).classList.remove('bg-white', 'text-blue-600', 'shadow-xs');
+        });
+
+        DOM.canvasWrapper.classList.add('hidden');
+        DOM.splitWrapper.classList.add('hidden');
+        DOM.sideWrapper.classList.add('hidden');
+
+        if (mode === 'single') {
+          document.getElementById('mode-single').classList.add('bg-white', 'text-blue-600', 'shadow-xs');
+          DOM.canvasWrapper.classList.remove('hidden');
+        } else if (mode === 'split') {
+          document.getElementById('mode-split').classList.add('bg-white', 'text-blue-600', 'shadow-xs');
+          DOM.splitWrapper.classList.remove('hidden');
+        } else if (mode === 'side') {
+          document.getElementById('mode-side').classList.add('bg-white', 'text-blue-600', 'shadow-xs');
+          DOM.sideWrapper.classList.remove('hidden');
+        } else if (mode === 'toggle') {
+          document.getElementById('mode-toggle').classList.add('bg-white', 'text-blue-600', 'shadow-xs');
+          DOM.canvasWrapper.classList.remove('hidden');
+        }
+      }
+
+      // Split View Draggable Slider Handler
+      let isDraggingSplit = false;
+      function setupSplitEvents() {
+        const onMove = (clientX) => {
+          if (!isDraggingSplit) return;
+          const rect = DOM.splitWrapper.getBoundingClientRect();
+          let posX = clientX - rect.left;
+          posX = Math.max(0, Math.min(posX, rect.width));
+          const pct = (posX / rect.width) * 100;
+          DOM.splitOverlay.style.width = pct + '%';
+          DOM.splitHandle.style.left = pct + '%';
+        };
+
+        DOM.splitHandle.addEventListener('mousedown', () => { isDraggingSplit = true; });
+        window.addEventListener('mouseup', () => { isDraggingSplit = false; });
+        window.addEventListener('mousemove', (e) => onMove(e.clientX));
+
+        DOM.splitHandle.addEventListener('touchstart', () => { isDraggingSplit = true; }, { passive: true });
+        window.addEventListener('touchend', () => { isDraggingSplit = false; });
+        window.addEventListener('touchmove', (e) => {
+          if (e.touches && e.touches[0]) onMove(e.touches[0].clientX);
+        }, { passive: true });
+      }
+
+      // ==========================================
+      // SECTION 7: AI BACKGROUND REMOVAL MANAGER
+      // ==========================================
+      async function executeAIBackgroundRemoval() {
+        if (!state.originalImage) return;
+
+        showProgress(true, 'Downloading & Compiling Neural Network...', 15);
+        const startTime = performance.now();
+
+        try {
+          // Dynamic ESM Import from trusted CDN
+          const { removeBackground } = await import(CONFIG.AI_MODEL_CDN);
+
+          showProgress(true, 'Running In-Browser Object Segmentation...', 45);
+
+          // Convert current canvas state to Blob for inference
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = state.originalImage.naturalWidth;
+          tempCanvas.height = state.originalImage.naturalHeight;
+          tempCanvas.getContext('2d').drawImage(state.originalImage, 0, 0);
+
+          const inputBlob = await new Promise(res => tempCanvas.toBlob(res, 'image/png'));
+
+          // Perform inference with real progress tracking
+          const resultBlob = await removeBackground(inputBlob, {
+            progress: (key, current, total) => {
+              if (total && total > 0) {
+                const pct = Math.min(95, Math.round((current / total) * 100));
+                showProgress(true, `Processing Neural Inference (${key})...`, pct);
+              }
+            }
+          });
+
+          // Decode Result Blob to Image
+          const cutoutUrl = URL.createObjectURL(resultBlob);
+          const cutoutImg = new Image();
+          await new Promise((resolve, reject) => {
+            cutoutImg.onload = resolve;
+            cutoutImg.onerror = reject;
+            cutoutImg.src = cutoutUrl;
+          });
+
+          state.aiCutoutBlob = resultBlob;
+          state.originalImage = cutoutImg; // Set cutout as the active baseline
+          state.exportFormat = 'image/png'; // Transparencies require PNG
+
+          pushHistoryState('AI Background Erased');
+          renderActivePipeline();
+          showProgress(false);
+          showToast('Background successfully removed!');
+
+          dispatchTelemetry('IMAGE_ACTION', {
+            toolName: 'RemoveBG',
+            action: 'Segmentation Success',
+            durationMs: Math.round(performance.now() - startTime),
+            status: 'success'
+          });
+
+        } catch (err) {
+          console.error('[AI Cutout Error]', err);
+          showProgress(false);
+          showToast('Failed to run AI segmentation. Device memory or network error.', true);
+
+          dispatchTelemetry('IMAGE_ACTION', {
+            toolName: 'RemoveBG',
+            action: 'Segmentation Failure',
+            status: 'error',
+            errorDetail: err.message || err.toString()
+          });
+        }
+      }
+
+      // ==========================================
+      // SECTION 8: COMPRESSION & ESTIMATION
+      // ==========================================
+      let debounceTimer = null;
+      function estimateExportSize(canvas) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          const format = state.exportFormat;
+          const quality = state.exportQuality;
+
+          canvas.toBlob(blob => {
+            if (!blob) return;
+            const sizeKB = (blob.size / 1024).toFixed(1);
+            state.estimatedSizeKB = sizeKB;
+
+            const origSizeKB = state.originalFile ? (state.originalFile.size / 1024).toFixed(1) : sizeKB;
+            DOM.compressOrigSize.textContent = `${origSizeKB} KB`;
+            DOM.compressOutSize.textContent = `${sizeKB} KB`;
+            DOM.exportSummarySize.textContent = `${sizeKB} KB`;
+
+            const delta = (((blob.size - (state.originalFile ? state.originalFile.size : blob.size)) / (state.originalFile ? state.originalFile.size : 1)) * 100).toFixed(1);
+            if (delta < 0) {
+              DOM.compressDelta.textContent = `${delta}% (Reduced)`;
+              DOM.compressDelta.className = 'font-bold text-emerald-600';
+            } else {
+              DOM.compressDelta.textContent = `+${delta}% (Increased)`;
+              DOM.compressDelta.className = 'font-bold text-amber-600';
+            }
+          }, format, quality);
+        }, 150);
+      }
+
+      // ==========================================
+      // SECTION 9: HISTORY & STATE UNDO/REDO
+      // ==========================================
+      function pushHistoryState(actionLabel) {
+        // Truncate redo states
+        if (history.index < history.stack.length - 1) {
+          history.stack = history.stack.slice(0, history.index + 1);
+        }
+
+        const snapshot = {
+          label: actionLabel,
+          targetWidth: state.targetWidth,
+          targetHeight: state.targetHeight,
+          rotation: state.rotation,
+          flipH: state.flipH,
+          flipV: state.flipV,
+          cropRect: state.cropRect ? { ...state.cropRect } : null,
+          sharpenAmount: state.sharpenAmount,
+          contrast: state.contrast,
+          brightness: state.brightness,
+          saturation: state.saturation,
+          exposure: state.exposure,
+          backgroundColor: state.backgroundColor,
+          exportFormat: state.exportFormat,
+          exportQuality: state.exportQuality
+        };
+
+        history.stack.push(snapshot);
+        if (history.stack.length > history.maxSize) {
+          history.stack.shift();
+        }
+        history.index = history.stack.length - 1;
+
+        updateHistoryButtons();
+        state.isDirty = history.index > 0;
+        DOM.dirtyIndicator.classList.toggle('hidden', !state.isDirty);
+      }
+
+      function applyHistoryState(snapshot) {
+        state.targetWidth = snapshot.targetWidth;
+        state.targetHeight = snapshot.targetHeight;
+        state.rotation = snapshot.rotation;
+        state.flipH = snapshot.flipH;
+        state.flipV = snapshot.flipV;
+        state.cropRect = snapshot.cropRect ? { ...snapshot.cropRect } : null;
+        state.sharpenAmount = snapshot.sharpenAmount;
+        state.contrast = snapshot.contrast;
+        state.brightness = snapshot.brightness;
+        state.saturation = snapshot.saturation;
+        state.exposure = snapshot.exposure;
+        state.backgroundColor = snapshot.backgroundColor;
+        state.exportFormat = snapshot.exportFormat;
+        state.exportQuality = snapshot.exportQuality;
+
+        // Sync form input fields
+        DOM.resizeWidthInput.value = Math.round(state.targetWidth);
+        DOM.resizeHeightInput.value = Math.round(state.targetHeight);
+        DOM.sliderSharpen.value = state.sharpenAmount;
+        DOM.sliderContrast.value = state.contrast;
+        DOM.sliderBrightness.value = state.brightness;
+        DOM.sliderSaturation.value = state.saturation;
+        DOM.sliderExposure.value = state.exposure;
+        DOM.sliderQuality.value = Math.round(state.exportQuality * 100);
+
+        updateSliderLabels();
+        renderActivePipeline();
+        updateHistoryButtons();
+      }
+
+      function undo() {
+        if (history.index > 0) {
+          history.index--;
+          applyHistoryState(history.stack[history.index]);
+          showToast(`Undo: ${history.stack[history.index].label}`);
+        }
+      }
+
+      function redo() {
+        if (history.index < history.stack.length - 1) {
+          history.index++;
+          applyHistoryState(history.stack[history.index]);
+          showToast(`Redo: ${history.stack[history.index].label}`);
+        }
+      }
+
+      function updateHistoryButtons() {
+        DOM.btnUndo.disabled = history.index <= 0;
+        DOM.btnRedo.disabled = history.index >= history.stack.length - 1;
+        DOM.btnResetAll.disabled = history.index <= 0;
+      }
+
+      // ==========================================
+      // SECTION 10: BATCH IMAGE ENGINE
+      // ==========================================
+      function handleBatchFiles(fileList) {
+        Array.from(fileList).forEach(file => {
+          if (['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+            state.batchQueue.push({
+              id: 'batch_' + Math.random().toString(36).substring(2, 9),
+              file: file,
+              status: 'pending', // pending, processing, completed, error
+              processedBlob: null
+            });
+          }
+        });
+
+        renderBatchQueue();
+        DOM.btnProcessBatch.disabled = state.batchQueue.length === 0;
+      }
+
+      function renderBatchQueue() {
+        if (state.batchQueue.length === 0) {
+          DOM.batchQueueList.innerHTML = '<p class="text-slate-400 italic text-center py-4">No batch items queued.</p>';
+          return;
+        }
+
+        DOM.batchQueueList.innerHTML = state.batchQueue.map(item => `
+          <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+            <span class="truncate max-w-[140px] font-semibold text-slate-700">${item.file.name}</span>
+            <div class="flex items-center space-x-2">
+              <span class="text-2xs uppercase px-1.5 py-0.5 rounded ${
+                item.status === 'completed' ? 'bg-emerald-100 text-emerald-700 font-bold' :
+                item.status === 'processing' ? 'bg-blue-100 text-blue-700 font-bold animate-pulse' :
+                item.status === 'error' ? 'bg-rose-100 text-rose-700 font-bold' :
+                'bg-slate-200 text-slate-600'
+              }">${item.status}</span>
+              ${item.processedBlob ? `
+                <button onclick="window.downloadBatchItem('${item.id}')" class="text-blue-600 hover:underline text-2xs font-bold">Save</button>
+              ` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      window.downloadBatchItem = function (id) {
+        const item = state.batchQueue.find(q => q.id === id);
+        if (!item || !item.processedBlob) return;
+        triggerFileDownload(item.processedBlob, `aquapixel_${item.file.name}`);
+      };
+
+      async function processBatchQueue() {
+        if (state.batchQueue.length === 0) return;
+        DOM.btnProcessBatch.disabled = true;
+
+        for (const item of state.batchQueue) {
+          if (item.status === 'completed') continue;
+          item.status = 'processing';
+          renderBatchQueue();
+
+          try {
+            const bmp = await createImageBitmap(item.file);
+            const off = document.createElement('canvas');
+            
+            // Apply current resize target logic
+            const targetW = state.targetWidth || bmp.width;
+            const targetH = state.targetHeight || bmp.height;
+            off.width = targetW;
+            off.height = targetH;
+
+            const ctx = off.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(bmp, 0, 0, targetW, targetH);
+
+            // Apply active filter adjustments
+            const imgData = ctx.getImageData(0, 0, targetW, targetH);
+            applyPixelEnhancements(imgData.data, targetW, targetH);
+            ctx.putImageData(imgData, 0, 0);
+
+            // Export to blob
+            item.processedBlob = await new Promise(res => off.toBlob(res, state.exportFormat, state.exportQuality));
+            item.status = 'completed';
+          } catch (err) {
+            console.error('Batch Item Error', err);
+            item.status = 'error';
+          }
+          renderBatchQueue();
+        }
+
+        DOM.btnDownloadBatchZip.disabled = !state.batchQueue.some(i => i.status === 'completed');
+        showToast('Batch processing complete.');
+      }
+
+      async function downloadBatchZip() {
+        showProgress(true, 'Assembling ZIP Archive...', 30);
+        try {
+          if (!window.JSZip) {
+            await loadScript(CONFIG.JSZIP_CDN);
+          }
+
+          const zip = new window.JSZip();
+          state.batchQueue.forEach((item, idx) => {
+            if (item.processedBlob) {
+              const ext = state.exportFormat.split('/')[1];
+              zip.file(`aquapixel_batch_${idx + 1}_${item.file.name.replace(/\.[^/.]+$/, '')}.${ext}`, item.processedBlob);
+            }
+          });
+
+          const zipBlob = await zip.generateAsync({ type: 'blob' }, (metadata) => {
+            showProgress(true, 'Compressing ZIP Package...', Math.round(metadata.percent));
+          });
+
+          triggerFileDownload(zipBlob, `AquaPixel_Batch_${Date.now()}.zip`);
+          showProgress(false);
+          showToast('ZIP archive successfully downloaded!');
+        } catch (err) {
+          console.error('[ZIP Error]', err);
+          showProgress(false);
+          showToast('Failed to create ZIP file.', true);
+        }
+      }
+
+      // ==========================================
+      // SECTION 11: TELEMETRY & BACKEND INTEGRATION
+      // ==========================================
+      function dispatchTelemetry(eventType, data) {
+        if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL.includes('YOUR_DEPLOYED_GAS_ID_HERE')) {
+          return; // Skip if backend unconfigured
+        }
+
+        const payload = {
+          eventType: eventType,
+          sessionId: CONFIG.SESSION_ID,
+          eventId: 'evt_' + Math.random().toString(36).substring(2, 9),
+          ...data
+        };
+
+        // GAS cross-origin simple-request post using text/plain to avoid preflight rejection
+        try {
+          fetch(CONFIG.APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Guarantees execution without blocking browser thread
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+          }).catch(() => {});
+        } catch (e) {
+          // Telemetry errors should never interrupt photo editing
+        }
+      }
+
+      function checkBackendHealth() {
+        if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL.includes('YOUR_DEPLOYED_GAS_ID_HERE')) {
+          DOM.backendStatusText.textContent = 'Standalone Mode';
+          DOM.backendStatusPill.classList.remove('hidden');
+          return;
+        }
+
+        fetch(`${CONFIG.APPS_SCRIPT_URL}?action=ping`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === 'online') {
+              DOM.backendStatusText.textContent = 'Backend Linked';
+              DOM.backendStatusPill.className = 'hidden sm:flex items-center space-x-1.5 px-2.5 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full';
+            }
+          })
+          .catch(() => {
+            DOM.backendStatusText.textContent = 'Backend Offline';
+            DOM.backendStatusPill.className = 'hidden sm:flex items-center space-x-1.5 px-2.5 py-1 text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 rounded-full';
+          });
+      }
+
+      // ==========================================
+      // SECTION 12: UI HELPERS & EVENT BINDINGS
+      // ==========================================
+      function showToast(msg, isError = false) {
+        DOM.toastMessage.textContent = msg;
+        DOM.statusToast.className = `mt-3 px-3 py-2 text-xs rounded-lg flex items-center justify-between text-white ${isError ? 'bg-rose-600' : 'bg-slate-900'} shadow-md`;
+        DOM.statusToast.classList.remove('hidden');
+        setTimeout(() => DOM.statusToast.classList.add('hidden'), 4500);
+      }
+
+      function showProgress(visible, text = 'Processing...', pct = 0) {
+        if (visible) {
+          DOM.progressStatusText.textContent = text;
+          DOM.progressBarFill.style.width = pct + '%';
+          DOM.progressPercentageText.textContent = pct + '%';
+          DOM.progressOverlay.classList.remove('hidden');
+        } else {
+          DOM.progressOverlay.classList.add('hidden');
+        }
+      }
+
+      function updateSliderLabels() {
+        DOM.valSharpen.textContent = `${DOM.sliderSharpen.value}%`;
+        DOM.valContrast.textContent = DOM.sliderContrast.value;
+        DOM.valBrightness.textContent = DOM.sliderBrightness.value;
+        DOM.valSaturation.textContent = DOM.sliderSaturation.value;
+        DOM.valExposure.textContent = (DOM.sliderExposure.value / 5).toFixed(1);
+        DOM.valQuality.textContent = `${DOM.sliderQuality.value}%`;
+      }
+
+      function updateMetaDisplays() {
+        DOM.metaFilename.textContent = state.filename || 'Untitled';
+        DOM.metaDimensions.textContent = `${state.targetWidth} × ${state.targetHeight} px`;
+        DOM.metaFilesize.textContent = `${state.estimatedSizeKB || (state.originalFile.size / 1024).toFixed(1)} KB`;
+        DOM.metaFormat.textContent = state.exportFormat.split('/')[1].toUpperCase();
+
+        DOM.exportBadgeFormat.textContent = state.exportFormat.split('/')[1].toUpperCase();
+        DOM.exportSummaryDim.textContent = `${Math.round(state.targetWidth)} × ${Math.round(state.targetHeight)} px`;
+
+        DOM.resizeWidthInput.value = Math.round(state.targetWidth);
+        DOM.resizeHeightInput.value = Math.round(state.targetHeight);
+      }
+
+      function enableWorkspaceUI() {
+        DOM.uploadPlaceholder.classList.add('hidden');
+        DOM.canvasWrapper.classList.remove('hidden');
+        DOM.btnQuickExport.disabled = false;
+        DOM.btnDownloadFinal.disabled = false;
+      }
+
+      function triggerFileDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 150);
+      }
+
+      function loadScript(src) {
+        return new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          s.onload = resolve;
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+
+      // ==========================================
+      // SECTION 13: EVENT LISTENERS REGISTRATION
+      // ==========================================
+      function setupEventListeners() {
+        // Tool Switcher Navigation
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('tool-btn-active'));
+            btn.classList.add('tool-btn-active');
+            
+            const tool = btn.dataset.tool;
+            state.activeTool = tool;
+
+            document.querySelectorAll('.tool-panel').forEach(p => p.classList.add('hidden'));
+            const activePanel = document.getElementById(`panel-${tool}`);
+            if (activePanel) activePanel.classList.remove('hidden');
+          });
+        });
+
+        // File Upload Handlers
+        DOM.btnUploadTrigger.addEventListener('click', () => DOM.fileInput.click());
+        DOM.uploadPlaceholder.addEventListener('click', () => DOM.fileInput.click());
+        DOM.fileInput.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) handleIncomingFile(e.target.files[0]);
+        });
+
+        // Drag & Drop
+        window.addEventListener('dragover', (e) => e.preventDefault());
+        window.addEventListener('drop', (e) => {
+          e.preventDefault();
+          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleIncomingFile(e.dataTransfer.files[0]);
+          }
+        });
+
+        // Clipboard Paste
+        window.addEventListener('paste', (e) => {
+          const items = e.clipboardData ? e.clipboardData.items : [];
+          for (let item of items) {
+            if (item.type.indexOf('image') !== -1) {
+              const file = item.getAsFile();
+              handleIncomingFile(file);
+              break;
+            }
+          }
+        });
+
+        // Resize Inputs & Aspect Ratio Logic
+        DOM.resizeWidthInput.addEventListener('input', () => {
+          const w = parseFloat(DOM.resizeWidthInput.value) || 1;
+          state.targetWidth = w;
+          if (state.lockAspectRatio && state.originalWidth > 0) {
+            state.targetHeight = Math.round(w * (state.originalHeight / state.originalWidth));
+            DOM.resizeHeightInput.value = state.targetHeight;
+          }
+        });
+
+        DOM.resizeHeightInput.addEventListener('input', () => {
+          const h = parseFloat(DOM.resizeHeightInput.value) || 1;
+          state.targetHeight = h;
+          if (state.lockAspectRatio && state.originalHeight > 0) {
+            state.targetWidth = Math.round(h * (state.originalWidth / state.originalHeight));
+            DOM.resizeWidthInput.value = state.targetWidth;
+          }
+        });
+
+        DOM.resizeLockAspect.addEventListener('change', (e) => {
+          state.lockAspectRatio = e.target.checked;
+        });
+
+        document.querySelectorAll('.preset-scale').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const scale = parseFloat(btn.dataset.scale);
+            state.targetWidth = Math.round(state.originalWidth * scale);
+            state.targetHeight = Math.round(state.originalHeight * scale);
+            DOM.resizeWidthInput.value = state.targetWidth;
+            DOM.resizeHeightInput.value = state.targetHeight;
+            renderActivePipeline();
+            pushHistoryState(`Scale ${scale * 100}%`);
+          });
+        });
+
+        DOM.resizePresetSelect.addEventListener('change', (e) => {
+          if (!e.target.value) return;
+          const [w, h] = e.target.value.split('x').map(Number);
+          state.targetWidth = w;
+          state.targetHeight = h;
+          DOM.resizeWidthInput.value = w;
+          DOM.resizeHeightInput.value = h;
+          renderActivePipeline();
+          pushHistoryState(`Preset ${e.target.value}`);
+        });
+
+        DOM.btnApplyResize.addEventListener('click', () => {
+          renderActivePipeline();
+          pushHistoryState('Resized Dimensions');
+          showToast('Resampling applied.');
+        });
+
+        DOM.btnResizeReset.addEventListener('click', () => {
+          state.targetWidth = state.originalWidth;
+          state.targetHeight = state.originalHeight;
+          DOM.resizeWidthInput.value = state.originalWidth;
+          DOM.resizeHeightInput.value = state.originalHeight;
+          renderActivePipeline();
+          pushHistoryState('Reset Dimensions');
+        });
+
+        // Enhancement Sliders (Debounced Live Feedback)
+        const setupDebouncedSlider = (slider, prop, label) => {
+          slider.addEventListener('input', () => {
+            state[prop] = parseFloat(slider.value);
+            updateSliderLabels();
+            renderActivePipeline();
+          });
+          slider.addEventListener('change', () => {
+            pushHistoryState(label);
+          });
+        };
+
+        setupDebouncedSlider(DOM.sliderSharpen, 'sharpenAmount', 'Sharpen Adjusted');
+        setupDebouncedSlider(DOM.sliderContrast, 'contrast', 'Contrast Adjusted');
+        setupDebouncedSlider(DOM.sliderBrightness, 'brightness', 'Brightness Adjusted');
+        setupDebouncedSlider(DOM.sliderSaturation, 'saturation', 'Saturation Adjusted');
+        setupDebouncedSlider(DOM.sliderExposure, 'exposure', 'Exposure Adjusted');
+
+        // Enhance Presets
+        document.querySelectorAll('.preset-enhance').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const p = btn.dataset.preset;
+            if (p === 'natural') {
+              state.sharpenAmount = 25; state.contrast = 8; state.brightness = 2; state.saturation = 8; state.exposure = 0;
+            } else if (p === 'crisp') {
+              state.sharpenAmount = 65; state.contrast = 15; state.brightness = 0; state.saturation = 10; state.exposure = 1;
+            } else if (p === 'portrait') {
+              state.sharpenAmount = 15; state.contrast = -5; state.brightness = 5; state.saturation = -5; state.exposure = 1;
+            } else if (p === 'product') {
+              state.sharpenAmount = 80; state.contrast = 20; state.brightness = 5; state.saturation = 15; state.exposure = 2;
+            }
+            DOM.sliderSharpen.value = state.sharpenAmount;
+            DOM.sliderContrast.value = state.contrast;
+            DOM.sliderBrightness.value = state.brightness;
+            DOM.sliderSaturation.value = state.saturation;
+            DOM.sliderExposure.value = state.exposure;
+            updateSliderLabels();
+            renderActivePipeline();
+            pushHistoryState(`Preset: ${p}`);
+          });
+        });
+
+        // Auto Enhance (Histogram Stretch Simulation)
+        DOM.btnAutoEnhance.addEventListener('click', () => {
+          state.sharpenAmount = 40;
+          state.contrast = 14;
+          state.brightness = 6;
+          state.saturation = 12;
+          state.exposure = 1;
+          DOM.sliderSharpen.value = state.sharpenAmount;
+          DOM.sliderContrast.value = state.contrast;
+          DOM.sliderBrightness.value = state.brightness;
+          DOM.sliderSaturation.value = state.saturation;
+          DOM.sliderExposure.value = state.exposure;
+          updateSliderLabels();
+          renderActivePipeline();
+          pushHistoryState('Auto Enhance');
+        });
+
+        // AI Cutout Button
+        DOM.btnExecuteRemoveBG.addEventListener('click', executeAIBackgroundRemoval);
+
+        // Background Color Fill Switchers
+        document.querySelectorAll('.bg-opt').forEach(btn => {
+          btn.addEventListener('click', () => {
+            state.backgroundColor = btn.dataset.bg;
+            renderActivePipeline();
+            pushHistoryState(`BG Color: ${btn.dataset.bg}`);
+          });
+        });
+        DOM.bgCustomColor.addEventListener('input', (e) => {
+          state.backgroundColor = e.target.value;
+          renderActivePipeline();
+        });
+
+        // Format & Compression Controls
+        document.querySelectorAll('.fmt-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.fmt-btn').forEach(b => b.className = 'fmt-btn px-2 py-2 border border-slate-200 bg-white text-slate-700 rounded-lg');
+            btn.className = 'fmt-btn px-2 py-2 border-2 border-blue-600 bg-sky-50 text-blue-700 rounded-lg';
+            state.exportFormat = btn.dataset.format;
+            DOM.qualitySliderContainer.style.display = state.exportFormat === 'image/png' ? 'none' : 'block';
+            updateMetaDisplays();
+            estimateExportSize(DOM.mainCanvas);
+          });
+        });
+
+        DOM.sliderQuality.addEventListener('input', (e) => {
+          state.exportQuality = parseFloat(e.target.value) / 100;
+          updateSliderLabels();
+          estimateExportSize(DOM.mainCanvas);
+        });
+
+        // Transform Controls (Rotate & Flip)
+        DOM.btnRotate90.addEventListener('click', () => {
+          state.rotation = (state.rotation + 90) % 360;
+          renderActivePipeline();
+          pushHistoryState('Rotate 90°');
+        });
+        DOM.btnRotate180.addEventListener('click', () => {
+          state.rotation = (state.rotation + 180) % 360;
+          renderActivePipeline();
+          pushHistoryState('Rotate 180°');
+        });
+        DOM.btnFlipH.addEventListener('click', () => {
+          state.flipH = !state.flipH;
+          renderActivePipeline();
+          pushHistoryState('Flip Horizontal');
+        });
+        DOM.btnFlipV.addEventListener('click', () => {
+          state.flipV = !state.flipV;
+          renderActivePipeline();
+          pushHistoryState('Flip Vertical');
+        });
+
+        // Crop Execution
+        document.querySelectorAll('.crop-ratio-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.crop-ratio-btn').forEach(b => b.className = 'crop-ratio-btn px-2 py-1.5 border border-slate-200 rounded-md');
+            btn.className = 'crop-ratio-btn px-2 py-1.5 border-2 border-blue-600 bg-sky-50 text-blue-700 rounded-md';
+            
+            const r = btn.dataset.ratio;
+            const w = DOM.mainCanvas.width;
+            const h = DOM.mainCanvas.height;
+
+            if (r === 'free') {
+              state.cropRect = { x: Math.round(w * 0.1), y: Math.round(h * 0.1), width: Math.round(w * 0.8), height: Math.round(h * 0.8) };
+            } else {
+              const [rx, ry] = r.split(':').map(Number);
+              const targetRatio = rx / ry;
+              let cropW = w * 0.8;
+              let cropH = cropW / targetRatio;
+              if (cropH > h * 0.8) {
+                cropH = h * 0.8;
+                cropW = cropH * targetRatio;
+              }
+              state.cropRect = { x: Math.round((w - cropW) / 2), y: Math.round((h - cropH) / 2), width: Math.round(cropW), height: Math.round(cropH) };
+            }
+            renderActivePipeline();
+          });
+        });
+
+        DOM.btnConfirmCrop.addEventListener('click', () => {
+          if (!state.cropRect) return;
+          state.targetWidth = state.cropRect.width;
+          state.targetHeight = state.cropRect.height;
+          pushHistoryState('Crop Applied');
+          showToast('Crop committed.');
+        });
+
+        DOM.btnCancelCrop.addEventListener('click', () => {
+          state.cropRect = null;
+          renderActivePipeline();
+        });
+
+        // History Undo / Redo Click
+        DOM.btnUndo.addEventListener('click', undo);
+        DOM.btnRedo.addEventListener('click', redo);
+        DOM.btnResetAll.addEventListener('click', () => {
+          if (history.stack.length > 0) {
+            applyHistoryState(history.stack[0]);
+            history.index = 0;
+            updateHistoryButtons();
+            showToast('All settings reset to original.');
+          }
+        });
+
+        // Keyboard Shortcuts
+        window.addEventListener('keydown', (e) => {
+          if (e.ctrlKey || e.metaKey) {
+            if (e.key === 'z') { e.preventDefault(); undo(); }
+            if (e.key === 'y') { e.preventDefault(); redo(); }
+          }
+        });
+
+        // View Mode Switchers
+        document.getElementById('mode-single').addEventListener('click', () => setViewMode('single'));
+        document.getElementById('mode-split').addEventListener('click', () => setViewMode('split'));
+        document.getElementById('mode-side').addEventListener('click', () => setViewMode('side'));
+        
+        // Quick Hold Original Toggle
+        const toggleBtn = document.getElementById('mode-toggle');
+        const startHold = () => {
+          if (!state.originalImage) return;
+          DOM.mainCanvas.getContext('2d').drawImage(state.originalImage, 0, 0, DOM.mainCanvas.width, DOM.mainCanvas.height);
+        };
+        const endHold = () => {
+          if (!state.originalImage) return;
+          renderActivePipeline();
+        };
+        toggleBtn.addEventListener('mousedown', startHold);
+        toggleBtn.addEventListener('mouseup', endHold);
+        toggleBtn.addEventListener('touchstart', startHold, { passive: true });
+        toggleBtn.addEventListener('touchend', endHold);
+
+        // Zoom Controls
+        DOM.btnZoomIn.addEventListener('click', () => {
+          state.zoomLevel = Math.min(3.0, state.zoomLevel + 0.25);
+          DOM.mainCanvas.style.transform = `scale(${state.zoomLevel})`;
+          DOM.zoomLevelText.textContent = `${Math.round(state.zoomLevel * 100)}%`;
+        });
+        DOM.btnZoomOut.addEventListener('click', () => {
+          state.zoomLevel = Math.max(0.25, state.zoomLevel - 0.25);
+          DOM.mainCanvas.style.transform = `scale(${state.zoomLevel})`;
+          DOM.zoomLevelText.textContent = `${Math.round(state.zoomLevel * 100)}%`;
+        });
+        DOM.btnZoomFit.addEventListener('click', () => {
+          state.zoomLevel = 1.0;
+          DOM.mainCanvas.style.transform = 'scale(1)';
+          DOM.zoomLevelText.textContent = '100%';
+        });
+
+        // Final Export Download Handler
+        const performExport = () => {
+          if (!state.originalImage) return;
+
+          const startTime = performance.now();
+          DOM.mainCanvas.toBlob(blob => {
+            if (!blob) {
+              showToast('Export failed during compression encode.', true);
+              return;
+            }
+
+            const ext = state.exportFormat === 'image/jpeg' ? 'jpg' : state.exportFormat === 'image/webp' ? 'webp' : 'png';
+            const filename = `aquapixel_${state.filename || 'export'}_${Date.now()}.${ext}`;
+            triggerFileDownload(blob, filename);
+
+            state.isDirty = false;
+            DOM.dirtyIndicator.classList.add('hidden');
+            showToast('Download started successfully.');
+
+            dispatchTelemetry('EXPORT', {
+              toolName: 'Export',
+              action: 'File Downloaded',
+              inputFormat: state.mimeType,
+              outDimensions: `${DOM.mainCanvas.width}x${DOM.mainCanvas.height}`,
+              origSizeKB: (state.originalFile ? state.originalFile.size / 1024 : 0).toFixed(1),
+              outSizeKB: (blob.size / 1024).toFixed(1),
+              durationMs: Math.round(performance.now() - startTime),
+              status: 'success'
+            });
+          }, state.exportFormat, state.exportQuality);
+        };
+
+        DOM.btnQuickExport.addEventListener('click', performExport);
+        DOM.btnDownloadFinal.addEventListener('click', performExport);
+
+        // Batch Queue Handlers
+        DOM.batchFileInput.addEventListener('change', (e) => {
+          if (e.target.files) handleBatchFiles(e.target.files);
+        });
+        DOM.btnProcessBatch.addEventListener('click', processBatchQueue);
+        DOM.btnDownloadBatchZip.addEventListener('click', downloadBatchZip);
+
+        setupSplitEvents();
+      }
+
+      // ==========================================
+      // SECTION 14: INITIALIZATION LIFECYCLE
+      // ==========================================
+      function init() {
+        setupEventListeners();
+        checkBackendHealth();
+        updateSliderLabels();
+      }
+
+      // Initialize on DOM Ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>
